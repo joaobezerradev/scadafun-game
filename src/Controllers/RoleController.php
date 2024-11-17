@@ -19,6 +19,11 @@ class RoleController extends Controller {
 
     public function characterRequest(Request $request, Response $response, array $args): Response {
         $role = $this->characterGet($args['roleid']);
+        
+        if ($role === null) {
+            return $this->error("Character not found");
+        }
+        
         return $this->response($role);
     }
 
@@ -92,13 +97,27 @@ class RoleController extends Controller {
         $getrolearg->WriteUInt32(-1);
         $getrolearg->WriteUInt32($roleid);
         $getrolearg->Pack(Opcodes::$role['getRole']);
-        $getrolearg->Send(WritePacket::GAMEDBD_PORT);
+        
+        if (!$getrolearg->Send(WritePacket::GAMEDBD_PORT)) {
+            return null;
+        }
+        
         $getroleres = new ReadPacket($getrolearg);
         $info = $getroleres->ReadPacketInfo();
         $getroleres->ReadUInt32(); // ???
-        $getroleres->ReadUInt32(); // Return Code
+        $returnCode = $getroleres->ReadUInt32(); // Return Code
+        
+        if ($returnCode !== 0 || $info['Length'] <= 0) {
+            return null;
+        }
+        
         $data = $getroleres->ReadBytes($info['Length']);
         $role = Marshallizer::unmarshal($data, $this->roleProtocol['role']);
+        
+        if (empty($role)) {
+            return null;
+        }
+        
         return $role;
     }
 
