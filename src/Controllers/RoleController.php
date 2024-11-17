@@ -2,7 +2,6 @@
 
 namespace App\Controllers;
 
-use App\Environment;
 use App\RPC\Opcodes;
 use App\RPC\ReadPacket;
 use App\RPC\WritePacket;
@@ -15,16 +14,15 @@ class RoleController extends Controller {
     public $roleProtocol;
 
     public function __construct() {
-        $version = Environment::getPwVersion();
-        $this->roleProtocol = require_once(__DIR__ . "/../RPC/Version/{$version}.php");
+        $this->roleProtocol = require_once(__DIR__ . "/../RPC/Version/{$_ENV['PW_VERSION']}.php");
     }
 
-    public function characterRequest(Request $request): Response {
-        $role = $this->characterGet($request->getParsedBody()['roleid']);
+    public function characterRequest(Request $request, Response $response, array $args): Response {
+        $role = $this->characterGet($args['roleid']);
         return $this->response($role);
     }
 
-    public function characternameRequest(Request $request): Response {
+    public function characternameRequest(Request $request, Response $response): Response {
         $rolename = $request->getParsedBody()['rolename'];
 
         $getRoleId = new WritePacket();
@@ -42,37 +40,37 @@ class RoleController extends Controller {
         return $this->response($role);
     }
 
-    public function meridianFull(Request $request): Response {
-        $roleid = $request->getParsedBody()['roleid'];
+    public function meridianFull(Request $request, Response $response, array $args): Response {
+        $roleid = $args['roleid'];
         $role = $this->characterGet($roleid);
         $role["status"]["meridian_data"] = '000000500000000000000000000000050000006400003f920000000100000000000000000000000000000000000000000000000000000000';
         $this->characterPut($roleid, json_decode(json_encode($role), true));
         return $this->response("");
     }
 
-    public function titleFull(Request $request): Response {
-        $roleid = $request->getParsedBody()['roleid'];
+    public function titleFull(Request $request, Response $response, array $args): Response {
+        $roleid = $args['roleid'];
         $role = $this->characterGet($roleid);
         $role["status"]["title_data"] = '8405cc0000000e050d058c050f05150516051705180519051a051b051c051d0583051e051f05200521052205230524052505840526052705280529052a052b052c052d052e052f0530053105320533053405350536053705380539053a053b053c053d053e053f054005410542054305850544058705450546054705480549054a0586054b054c054d054e054f058805500551055205530554055505560557055805590589055a055b055c055d055e055f0560056105620563056405650566056705680569056a056b056c056d056e056f05700571057205730574057505760577058b0578058a0579057a057b057c057d057e057f058005810582058d058e058f051106140615061606170618061d0629062b063e06610662066306640666066706680669066a066b066c066d066e066f067006710672067306740675067606770678067a067b067c067d067e067f0680068106820683068406850686068706880689068a068b068c068d068e068f06900691069206930694069b069c069f06a006a106a206a306a406a506a606a706a806a906aa06ab06ac06ad06ae0600000000';
         $this->characterPut($roleid, json_decode(json_encode($role), true));
         return $this->response("");
     }
 
-    public function characterResponse(Request $request): Response {
+    public function characterResponse(Request $request, Response $response, array $args): Response {
         $roledecode = json_decode($request->getParsedBody()['data'], true);
-        $this->characterPut($request->getParsedBody()['roleid'], $roledecode);
+        $this->characterPut($args['roleid'], $roledecode);
         return $this->response("");
     }
 
-    public function resetBankRequest(Request $request): Response {
-        $role = $this->characterGet($request->getParsedBody()['roleid']);
+    public function resetBankRequest(Request $request, Response $response, array $args): Response {
+        $role = $this->characterGet($args['roleid']);
         $role['status']['storehousepasswd'] = '';
-        $this->characterPut($request->getParsedBody()['roleid'], $role);
+        $this->characterPut($args['roleid'], $role);
         return $this->response("");
     }
 
-    public function renameRequest(Request $request): Response {
-        $roleid = $request->getParsedBody()['roleid'];
+    public function renameRequest(Request $request, Response $response, array $args): Response {
+        $roleid = $args['roleid'];
         $oldname = $request->getParsedBody()['oldname'];
         $newname = $request->getParsedBody()['newname'];
         $this->rename($roleid, $oldname, $newname);
@@ -104,8 +102,8 @@ class RoleController extends Controller {
         return $role;
     }
 
-    public function factionRequest(Request $request): Response {
-        $factionid = $request->getParsedBody()['factionid'];
+    public function factionRequest(Request $request, Response $response, array $args): Response {
+        $factionid = $args['factionid'];
         $getfaction = new WritePacket();
         $getfaction->WriteUInt32(-1);
         $getfaction->WriteUInt32($factionid);
@@ -134,8 +132,8 @@ class RoleController extends Controller {
         return $this->response($data);
     }
 
-    public function userfactionRequest(Request $request): Response {
-        $roleid = $request->getParsedBody()['roleid'];
+    public function userfactionRequest(Request $request, Response $response, array $args): Response {
+        $roleid = $args['roleid'];
         $getfaction = new WritePacket();
         $getfaction->WriteUInt32(-1);
         $getfaction->WriteUInt32(1);
@@ -170,35 +168,35 @@ class RoleController extends Controller {
         $putrolearg->Send(WritePacket::GAMEDBD_PORT);
     }
 
-    public function banRole(Request $request): void {
+    public function banRole(Request $request, Response $response, array $args): void {
         $Packet = new WritePacket();
         $Packet->WriteUInt32(-1); // gmroleid
         $Packet->WriteUInt32(0); // ssid
-        $Packet->WriteUInt32($request->getParsedBody()['roleid']); // ID role/account
+        $Packet->WriteUInt32($args['roleid']); // ID role/account
         $Packet->WriteUInt32($request->getParsedBody()['time']); // Time
         $Packet->WriteUString($request->getParsedBody()['reason']); //Reason
         $Packet->Pack(0x168); //Ban role
         $Packet->Send(WritePacket::GDELIVERYD_PORT, true);
     }
 
-    public function muteRole(Request $request): void {
+    public function muteRole(Request $request, Response $response, array $args): void {
         $Packet = new WritePacket();
         $Packet->WriteUInt32(-1); // gmroleid
         $Packet->WriteUInt32(0); // ssid
-        $Packet->WriteUInt32($request->getParsedBody()['roleid']); // ID role/account
+        $Packet->WriteUInt32($args['roleid']); // ID role/account
         $Packet->WriteUInt32($request->getParsedBody()['time']); // Time
         $Packet->WriteUString($request->getParsedBody()['reason']); //Reason
         $Packet->Pack(0x164); //Ban role
         $Packet->Send(WritePacket::GDELIVERYD_PORT, true);
     }
 
-    public function banAccount(Request $request): Response {
+    public function banAccount(Request $request, Response $response, array $args): Response {
         $Packet = new WritePacket();
         $Packet->WriteUInt32(-1); // always
         $Packet->WriteUByte($request->getParsedBody()['operation']); // operation
         $Packet->WriteUInt32(-1); // gmuserid
         $Packet->WriteUInt32(-1); // source
-        $Packet->WriteUInt32($request->getParsedBody()['userid']); // ID role/account
+        $Packet->WriteUInt32($args['userid']); // ID role/account
         $Packet->WriteUInt32($request->getParsedBody()['time']); // Time
         $Packet->WriteUString($request->getParsedBody()['reason']); //Reason
         $Packet->Pack(0x1F44); //Ban account

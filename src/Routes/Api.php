@@ -1,10 +1,12 @@
 <?php
 
 use App\Middleware\Authorizer;
+use App\Middleware\RequestLogger;
 use App\Controllers\HealthController;
 use App\Controllers\GameController;
 use App\Controllers\RoleController;
 use App\Controllers\UserController;
+
 
 // Health check route - No auth required
 $app->get('/health', [HealthController::class, 'check']);
@@ -18,21 +20,21 @@ $app->group('/api', function($app) {
     $app->put('/game/rate', [GameController::class, 'setDoubleRate']);
 
     // Role routes
-    $app->get('/role/{id}', [RoleController::class, 'characterRequest']);
-    $app->put('/role/{id}', [RoleController::class, 'characterResponse']);
-    $app->get('/role/name/{name}', [RoleController::class, 'characternameRequest']);
-    $app->get('/role/{id}/faction', [RoleController::class, 'factionRequest']);
-    $app->get('/role/{id}/faction/user', [RoleController::class, 'userfactionRequest']);
-    $app->post('/role/{id}/bank/reset', [RoleController::class, 'resetBankRequest']);
-    $app->put('/role/{id}/name', [RoleController::class, 'renameRequest']);
-    $app->put('/role/{id}/meridian', [RoleController::class, 'meridianFull']);
-    $app->put('/role/{id}/title', [RoleController::class, 'titleFull']);
-    $app->post('/role/{id}/ban', [RoleController::class, 'banRole']);
-    $app->post('/role/{id}/mute', [RoleController::class, 'muteRole']);
-    $app->post('/role/{id}/ban/account', [RoleController::class, 'banAccount']);
+    $app->get('/role/{roleid}', [RoleController::class, 'characterRequest']);
+    $app->put('/role/{roleid}', [RoleController::class, 'characterResponse']);
+    $app->post('/role/name', [RoleController::class, 'characternameRequest']);
+    $app->get('/faction/{factionid}', [RoleController::class, 'factionRequest']);
+    $app->get('/role/{roleid}/faction', [RoleController::class, 'userfactionRequest']);
+    $app->post('/role/{roleid}/bank/reset', [RoleController::class, 'resetBankRequest']);
+    $app->put('/role/{roleid}/name', [RoleController::class, 'renameRequest']);
+    $app->put('/role/{roleid}/meridian', [RoleController::class, 'meridianFull']);
+    $app->put('/role/{roleid}/title', [RoleController::class, 'titleFull']);
+    $app->post('/role/{roleid}/ban', [RoleController::class, 'banRole']);
+    $app->post('/role/{roleid}/mute', [RoleController::class, 'muteRole']);
+    $app->post('/user/{userid}/ban', [RoleController::class, 'banAccount']);
 
     // User routes
-    $app->get('/user/{id}/roles', [UserController::class, 'rolesRequest']);
-    $app->delete('/user/{id}/lock', [UserController::class, 'removelockRequest']);
+    $app->get('/user/{userid}/roles', [UserController::class, 'rolesRequest']);
+    $app->delete('/user/{userid}/lock', [UserController::class, 'removelockRequest']);
 })->add(new Authorizer());
 

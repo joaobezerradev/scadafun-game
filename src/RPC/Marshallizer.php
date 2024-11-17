@@ -136,7 +136,7 @@ class Marshallizer
 
     public static function unpackCuint($data, &$p)
     {
-        if (env('VERSION') != 'pw12607')
+        if ($_ENV['PW_VERSION'] != 'pw12607')
         {
             $hex = hexdec(bin2hex(substr($data, $p, 1)));
             $min = 0;

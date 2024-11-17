@@ -3,8 +3,8 @@
     "version": "1.0.0",
     "description": "Perfect World API using Slim Framework",
     "scripts": {
-        "start": "npm run setup && php -S 0.0.0.0:8080 -t src",
-        "start:dev": "npm run setup && php -S localhost:8080 -t src",
+        "start": "npm run setup && php -S 0.0.0.0:8989 -t src",
+        "start:dev": "npm run setup && php -S localhost:8989 -t src",
         "build": "composer install",
         "update": "composer update",
         "setup": "composer install && php -r \"copy('.env.example', '.env');\"",

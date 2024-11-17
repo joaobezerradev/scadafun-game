@@ -15,10 +15,10 @@ class UserController extends Controller {
         
     }
 
-    public function rolesRequest(Request $request): Response {
+    public function rolesRequest(Request $request, Response $response, array $args): Response {
         $getUserRoles = new WritePacket();
         $getUserRoles->WriteUInt32(-1);
-        $getUserRoles->WriteUInt32($request->userid);
+        $getUserRoles->WriteUInt32($args['userid']);
         $getUserRoles->Pack(Opcodes::$user['userRoles']);
         $getUserRoles->Send(WritePacket::GAMEDBD_PORT);
         $result = new ReadPacket($getUserRoles);
@@ -35,11 +35,11 @@ class UserController extends Controller {
         return $this->response($data);
     }
 
-    public function removelockRequest(Request $request): Response 
+    public function removelockRequest(Request $request, Response $response, array $args): Response 
     {
         $removeLock = new WritePacket();
         $removeLock->WriteUInt32(-1);
-        $removeLock->WriteUInt32($request->getAttribute('id'));
+        $removeLock->WriteUInt32($args['userid']);
         $removeLock->Pack(Opcodes::$user['removeLock']);
         $removeLock->Send(WritePacket::GAMEDBD_PORT);
         

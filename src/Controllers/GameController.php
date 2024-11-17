@@ -11,7 +11,7 @@ use App\RPC\Structs\GRoleInventory;
 
 class GameController extends Controller 
 {
-    public function broadcastRequest(Request $request): Response 
+    public function broadcastRequest(Request $request, Response $response, array $args): Response 
     {
         $data = $request->getParsedBody();
         
@@ -38,7 +38,7 @@ class GameController extends Controller
         return $broadcastPacket;
     }
 
-    public function onlineListRequest(Request $request): Response 
+    public function onlineListRequest(Request $request, Response $response, array $args): Response 
     {
         $users = [];
         $handler = -1;
@@ -88,7 +88,7 @@ class GameController extends Controller
         ]);
     }
 
-    public function emailRequest(Request $request): Response 
+    public function emailRequest(Request $request, Response $response, array $args): Response 
     {
         $data = $request->getParsedBody();
         
@@ -116,7 +116,19 @@ class GameController extends Controller
         return $this->response();
     }
 
-    public function email($data) 
+    public function setDoubleRate(Request $request, Response $response, array $args): Response 
+    {
+        $data = $request->getParsedBody();
+        
+        $ratePacket = new WritePacket();
+        $ratePacket->WriteUInt32($data['rate'] ?? 1); // Taxa de exp/sp (1 = normal, 2 = double)
+        $ratePacket->Pack(Opcodes::$game['GMAttr']);
+        $ratePacket->Send(WritePacket::GDELIVERYD_PORT);
+        
+        return $this->response();
+    }
+
+    private function email($data) 
     {
         $email = new WritePacket();
         $email->WriteUInt32(1);
@@ -140,17 +152,5 @@ class GameController extends Controller
         $email->WriteUInt32($data['attach_money']);
         $email->Pack(Opcodes::$game['email']);
         $email->Send(WritePacket::GDELIVERYD_PORT);
-    }
-
-    public function setDoubleRate(Request $request): Response 
-    {
-        $data = $request->getParsedBody();
-        
-        $ratePacket = new WritePacket();
-        $ratePacket->WriteUInt32($data['rate'] ?? 1); // Taxa de exp/sp (1 = normal, 2 = double)
-        $ratePacket->Pack(Opcodes::$game['GMAttr']);
-        $ratePacket->Send(WritePacket::GDELIVERYD_PORT);
-        
-        return $this->response();
     }
 }
